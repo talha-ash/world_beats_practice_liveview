@@ -1,5 +1,8 @@
 import Config
 
+# Set enviromental variable from env script
+import_config("env.exs")
+
 # Configure your database
 config :world_beats, WorldBeats.Repo,
   username: "postgres",
@@ -10,9 +13,9 @@ config :world_beats, WorldBeats.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-config :live_beats, :github,
-  client_id: Application.get_env(:live_beats, :live_beats_github_client_id),
-  client_secret: Application.get_env(:live_beats, :live_beats_github_client_secret)
+config :world_beats, :github,
+  client_id: System.fetch_env!("LIVE_BEATS_GITHUB_CLIENT_ID"),
+  client_secret: System.fetch_env!("LIVE_BEATS_GITHUB_CLIENT_SECRET")
 
 # For development, we disable any cache and enable
 # debugging and code reloading.

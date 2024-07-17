@@ -1,6 +1,9 @@
 defmodule WorldBeatsWeb.Router do
   use WorldBeatsWeb, :router
 
+  import WorldBeatsWeb.UserAuth,
+    only: [redirect_if_user_is_authenticated: 2]
+
   pipeline :browser do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -15,9 +18,8 @@ defmodule WorldBeatsWeb.Router do
   end
 
   scope "/", WorldBeatsWeb do
-    pipe_through :browser
-
-    get "/", PageController, :home
+    pipe_through [:browser, :redirect_if_user_is_authenticated]
+    get "/oauth/callbacks/:provider", OAuthCallbackController, :new
   end
 
   # Other scopes may use custom stacks.
@@ -39,6 +41,24 @@ defmodule WorldBeatsWeb.Router do
 
       live_dashboard "/dashboard", metrics: WorldBeatsWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
+    end
+  end
+
+  scope "/", WorldBeatsWeb do
+    pipe_through :browser
+
+    # get "/", RedirectController, :redirect_authenticated
+    # get "/files/:id", FileController, :show
+
+    delete "/signout", OAuthCallbackController, :sign_out
+
+    live_session :default, on_mount: [{WorldBeatsWeb.UserAuth, :current_user}] do
+      live "/signin", SignInLive, :index
+    end
+
+    live_session :authenticated,
+      on_mount: [{WorldBeatsWeb.UserAuth, :ensure_authenticated}] do
+      live "/:profile_username", ProfileLive, :show
     end
   end
 end

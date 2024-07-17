@@ -15,9 +15,22 @@ defmodule WorldBeatsWeb.CoreComponents do
   Icons are provided by [heroicons](https://heroicons.com). See `icon/1` for usage.
   """
   use Phoenix.Component
-
+  use WorldBeatsWeb, :verified_routes
   alias Phoenix.LiveView.JS
+  alias WorldBeats.Accounts
   import WorldBeatsWeb.Gettext
+
+  def profile_path(username) when is_binary(username) do
+    unverified_path(WorldBeatsWeb.Endpoint, WorldBeatsWeb.Router, ~p"/#{username}")
+  end
+
+  def profile_path(%Accounts.User{} = current_user) do
+    profile_path(current_user.username)
+  end
+
+  # def profile_path(%MediaLibrary.Profile{} = profile) do
+  #   profile_path(profile.username)
+  # end
 
   @doc """
   Renders a modal.
